@@ -12,17 +12,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importDefault(require("mongoose"));
-const dotenv = require("dotenv");
-dotenv.config();
-const connection = () => __awaiter(void 0, void 0, void 0, function* () {
+const jwt = require("jsonwebtoken");
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const auth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const token = req.headers["authorization"];
+    if (!token) {
+        return res.status(401).json({ msg: "Unauthorized" });
+        //token present but method not allowed > 403, forbidden
+    }
     try {
-        const connString = process.env.DB_CONNECT;
-        yield mongoose_1.default.connect(connString);
-        console.log("Database connected");
+        const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+        req.body.userID = decodedData.id;
+        next();
     }
     catch (err) {
-        console.log("Not connected. Error : ", err);
+        console.log(err);
+        res.status(500).json({ msg: "ISE" });
     }
 });
-module.exports = connection;
+module.exports = auth;

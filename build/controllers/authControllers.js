@@ -38,8 +38,11 @@ exports.signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const user = new User(userBody);
         yield user.save();
         const payload = { id: user._id };
-        const token = yield jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '2h' });
-        res.status(201).json({ token: token });
+        const token = yield jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '12h' });
+        res.status(201).json({ token: token,
+            id: user._id,
+            username: user.username,
+            email: user.email });
     }
     catch (err) {
         res.status(500).json({ err: "Server not functioning" });
@@ -60,8 +63,11 @@ exports.login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(401).json({ msg: "Password is wrong. Enter the correct one!" });
         }
         const payload = { id: userCheck._id };
-        const token = yield jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '2h' });
-        res.status(201).json({ token: token });
+        const token = yield jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '12h' });
+        res.status(201).json({ token: token,
+            id: userCheck._id,
+            username: userCheck.username,
+            email: userCheck.email });
     }
     catch (err) {
         res.status(500).json({ err: "Server not functioning" });

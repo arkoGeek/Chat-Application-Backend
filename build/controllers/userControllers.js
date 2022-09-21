@@ -12,7 +12,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const User = require("../models/User");
 exports.getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const users = yield User.find({}, { username: 1, email: 1, _id: 0 });
+        const keyword = req.query.search
+            ? { username: { $regex: req.query.search, $options: "i" } }
+            : {};
+        const users = yield User.find(keyword).find({
+            _id: { $ne: req.body.userID },
+        }).select("-password");
         res.status(200).json({ users: users });
     }
     catch (err) {
@@ -22,9 +27,15 @@ exports.getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getLoggedUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userDetails = yield User.findById(req.body.userID)
-            .select("username email -_id")
+            .select("username email _id")
             .select("-password");
-        res.status(200).json({ loggedUser: userDetails });
+        res
+            .status(200)
+            .json({
+            id: userDetails._id,
+            username: userDetails.username,
+            email: userDetails.email,
+        });
     }
     catch (err) {
         res.status(500).json({ msg: "Server error" });
